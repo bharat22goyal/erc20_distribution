@@ -1,0 +1,2 @@
+docker build . -t bharat/node-blockchain
+docker run -it bharat/node-blockchain sh
