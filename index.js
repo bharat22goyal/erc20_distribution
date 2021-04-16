@@ -3,6 +3,7 @@ const rpcURL = 'https://ropsten.infura.io/v3/1750691d1d10434496d754412592e0ee' /
 const web3 = new Web3(rpcURL)
 var Tx = require('ethereumjs-tx').Transaction
 const fs = require('fs');
+var BigNumber = require('big-number');
 
 //read address file 
   var data = fs.readFileSync('test.txt', 'utf8');
@@ -273,10 +274,13 @@ const contractAddress = '0x2359f4788dc0fceec3a1797abd5be436bbcdcca9'
 const contract = new web3.eth.Contract(abi, contractAddress)
 
 // name, symbol, total supply
-contract.methods.totalSupply().call((err, result) => { console.log('total supply:'+result) })
+//contract.methods.totalSupply().call((err, result) => { console.log('total supply:'+result) })
 contract.methods.name().call((err, result) => { console.log('Name of token: '+result) })
 //contract.methods.symbol().call((err, result) => { console.log(result) })
-
+const getTotalSupply = async() => {
+	let totSupply =  await contract.methods.totalSupply().call()
+	return "totsup: " + totSupply
+  }
 
 //Provides functional and fundamental output of the contract
 const account1 = '0x8327923e773c8225b9b41286824Cb66b805A94ba' // Your account address 1
@@ -324,14 +328,18 @@ const getTransactionCount = async(account) => {
 
   
  const go =  async (a) => {
-	var Calculate =  1000000
-	var tokenPerAccount = ((0.05*Calculate)/10).toString() + "000000000000000000"
+	
+	// calculate token per account
+
+	let ownerBalance = await contract.methods.totalSupply().call()
+	let bal = new BigNumber(ownerBalance)
+	let fivepercent = bal.div(100)
+	fivepercent = bal.multiply(5)
+	let tokenPerAccount = fivepercent.div(addresses.length)
 	
 	try{
-		// console.log('Balance of tokens');
-		// contract.methods.balanceOf('0xe450cf325868127c9e213462b6ff4454f8bd7d81').call((err, result) => { console.log(result) })
-
-		await transferFunds(account1, a, tokenPerAccount)
+		
+		await transferFunds(account1, a, String(tokenPerAccount))
 	}catch(err){
 		console.log(err)
 	}
